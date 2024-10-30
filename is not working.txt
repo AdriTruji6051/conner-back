@@ -1,0 +1,7 @@
+At index HTML change scripts import by the following script imports:     
+    <script src="{{ url_for('static', filename='runtime.js') }}"></script>
+    <script src="{{ url_for('static', filename='polyfills.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+
+//NOTE: Maybe you'll need to change the filename, it depends about your ng build output :)

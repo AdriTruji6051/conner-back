@@ -1,0 +1,3 @@
+There you shuld create the Databeses using the prompts at db_architecure.sql
+The Databeses should be created with .db extension and working with sqlite3
+Also, add the .jpg bussines logo with an aspect ratio of '12 : 5'

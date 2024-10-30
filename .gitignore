@@ -1,0 +1,14 @@
+printing tests/
+__pycache__/
+backup/
+build/
+dist/
+logs.txt
+*.spec
+*.ico
+*.png
+*.html
+*.css
+*.js
+*.jpg
+*.db
