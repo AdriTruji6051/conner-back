@@ -17,20 +17,38 @@ def serve_index(path=None):
     print(path)
     return render_template('index.html')
 
+@routes.route('/api/get/product/')
+@routes.route('/api/get/product/id/')
+@routes.route('/api/get/products/description/')
+@routes.route('/api/get/siblings/product/id/')
+@routes.route('/api/delete/product/id/')
+@routes.route('/api/get/tickets/day/')
+@routes.route('/api/get/modifiedProducts/day/')
+def notParameters():
+    return jsonify({'message' : 'Not data sended'})
+
+
+
 
 @routes.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
+    keys = ['username', 'password']
+    for key in keys:
+        if not key in keys:
+            return jsonify({'message' : 'Not data sended'}), 400
+
+
     username = data.get('username').lower()
     password = data.get('password')
 
     if username == 'admin' and password == '14725':
         access_token = create_access_token(identity=username)
-        return jsonify({'login': 'exitoso', 'token': access_token}), 200
+        return jsonify({'login': 'succesfull', 'token': access_token}), 200
     else:
-        return jsonify({'login': 'fallido', 'message': 'Credenciales incorrectas'}), 401
+        return jsonify({'login': 'unauthorized', 'message': 'Uncorrect credentials'}), 401
     
-@routes.route('/api/init/new/', methods=['GET'])
+@routes.route('/api/init/new', methods=['GET'])
 @jwt_required()
 def initPc():
     try:
@@ -39,12 +57,12 @@ def initPc():
         global PRINTERS_ON_WEB
         PRINTERS_ON_WEB.update(client_printers)
     except Exception as e:
-        log_error(f'/api/init/new/: {e}')
+        log_error(f'/api/init/new: {e}')
         return jsonify({'printers': 'Not found printers there!'}), 404
     finally:
         return jsonify({'printers': 'loaded'})
     
-@routes.route('/api/get/printers/', methods=['GET'])
+@routes.route('/api/get/printers', methods=['GET'])
 @jwt_required()
 def getPrinters():
     printers = []
@@ -62,6 +80,8 @@ def getPrinters():
 def getProduct(search):
     db = get_pdv_db()
     try:
+        if not search:
+            return jsonify({'message' : 'Not data sended'}), 100
         
         query = "SELECT * FROM products WHERE code = ?"
         prod = db.execute(query, [search]).fetchone()
@@ -86,7 +106,8 @@ def getProduct(search):
 @jwt_required()
 def getProductById(id):
     db = get_pdv_db()
-    try: 
+    try:
+        
         query = "SELECT * FROM products WHERE code = ?;"
         prod = db.execute(query, [id]).fetchone()
 
@@ -96,7 +117,7 @@ def getProductById(id):
             return jsonify(dict(prod))
     except Exception as e:
         if e: log_error(f'/api/get/product/id/<str>: {e}')
-        return jsonify('{"message": "Product not found"}'), 404
+        return jsonify({"message": "Product not found"}), 404
     finally:
         close_pdv_db()
 
@@ -144,7 +165,7 @@ def getSiblings(search):
             prod = dict(db.execute("SELECT parentCode FROM products WHERE code = ?;", [search]).fetchone())
             search = prod['parentCode']
             siblings = db.execute(query, [search]).fetchall()
-            if siblings is None:
+            if not len(siblings):
                 raise Exception
         
         siblingsArray = []
@@ -156,11 +177,11 @@ def getSiblings(search):
         return jsonify({"parent" : parent, "childs" : siblingsArray})
     except Exception as e:
         if e: log_error(f'/api/get/products/description/<str>: {e}')
-        return jsonify({"message": "Product not found"}), 404
+        return jsonify({"message": "Not siblings!"}), 404
     finally:
         close_pdv_db()
 
-@routes.route('/api/get/all/departments/', methods=['GET'])
+@routes.route('/api/get/all/departments', methods=['GET'])
 @jwt_required()
 def getDepartments():
     db = get_pdv_db()
@@ -180,14 +201,14 @@ def getDepartments():
         close_pdv_db()
 
 #PRODUCTS CRUD ----------------->
-@routes.route('/api/create/product/', methods=['POST'])
+@routes.route('/api/create/product', methods=['POST'])
 @jwt_required()
 def createProduct():
     db = get_pdv_db()
 
     try:
         data = dict(request.get_json())
-    
+
         if data is None:
             raise Exception
 
@@ -212,12 +233,12 @@ def createProduct():
         return jsonify({'message' : 'Product succesfully created!'})
             
     except Exception as e:
-        if e: log_error(f'/api/create/product/: {e}')
-        return jsonify({'message' : f"Couldn't create the product"}), 500
+        if e: log_error(f'/api/create/product: {e}')
+        return jsonify({'message' : "Couldn't create the product"}), 500
     finally:
         close_pdv_db()
     
-@routes.route('/api/update/product/', methods=['PUT'])
+@routes.route('/api/update/product', methods=['PUT'])
 @jwt_required()
 def updateProduct():
     db = get_pdv_db()
@@ -270,6 +291,9 @@ def deleteProductById(id):
     db = get_pdv_db()
 
     try:
+        if not id:
+            return jsonify({'message' : 'Not data sended'}), 100
+        
         db.execute("PRAGMA foreign_keys = ON;") 
         query = 'SELECT * FROM products WHERE code = ?;'
         row = db.execute(query, [id]).fetchone()
@@ -296,9 +320,12 @@ def deleteProductById(id):
 @routes.route('/api/get/tickets/day/<string:day>', methods=['GET'])
 @jwt_required()
 def getTicketsByDate(day):
-    #Input date format YYYY:MM:DD
+    #Input date format YYYY-MM-DD
     db = get_pdv_db()
     try:
+        if not day:
+            return jsonify({'message' : 'Not data sended'}), 100
+        
         sql = 'SELECT * FROM tickets WHERE createdAt LIKE ?;'
         sqlPr = 'SELECT * FROM ticketsProducts WHERE ticketId = ?;'
 
@@ -319,7 +346,7 @@ def getTicketsByDate(day):
             row['products'] = products
             answer.append(row)
 
-        return jsonify(answer)
+        return jsonify(answer[::-1])
     
     except Exception as e:
         if e: log_error(f'/api/get/tickets/day/<str>: {e}')
@@ -327,7 +354,7 @@ def getTicketsByDate(day):
     finally:
         close_pdv_db()
 
-@routes.route('/api/print/ticket/id/', methods=['POST'])
+@routes.route('/api/print/ticket/id', methods=['POST'])
 @jwt_required()
 def printTicketById():
     db = get_pdv_db()
@@ -337,7 +364,7 @@ def printTicketById():
         if data is None:
             return jsonify({'message' : 'Not data sended'}), 400
         
-        id = data['id']
+        id = data['ID']
         printerName = data['printerName']
         if(printerName):
             printer = PRINTERS_ON_WEB[printerName]
@@ -360,14 +387,14 @@ def printTicketById():
         return jsonify({'message' : 'Succesfull ticket reprint!'})
     
     except Exception as e:
-        if e: log_error(f'/api/print/ticket/id/: {e}')
+        if e: log_error(f'/api/print/ticket/id: {e}')
         return jsonify({'message' : 'Problems at getting tickets!'}), 400
     finally:
         close_pdv_db()
 
 
 #TICKET CRUD
-@routes.route('/api/create/ticket/', methods=['POST'])
+@routes.route('/api/create/ticket', methods=['POST'])
 @jwt_required()
 def createTicket():
     db = get_pdv_db()
@@ -377,7 +404,6 @@ def createTicket():
         if data is None:
             return jsonify({'message' : 'Not data sended'}), 400
         
-        #Keys: products,total, paidWith, notes, willPrint
         date = datetime.now()
 
         createAt = date.strftime('%Y-%m-%d %H:%M:%S')
@@ -450,12 +476,12 @@ def createTicket():
         
         return jsonify({'folio' : ticketId})
     except Exception as e:
-        if e: log_error(f'/api/create/ticket/: {e}')
+        if e: log_error(f'/api/create/ticket: {e}')
         return jsonify({'message' : 'Problems at updating database!'}), 500
     finally:
         close_pdv_db()
 
-@routes.route('/api/update/ticket/', methods=['PUT'])
+@routes.route('/api/update/ticket', methods=['PUT'])
 @jwt_required()
 def updateTicket():
     db = get_pdv_db()
@@ -468,16 +494,18 @@ def updateTicket():
         ticketID = data['ID']
         products = data['products']
 
-        db.execute('UPDATE tickets SET profit = ?, discount = ?, subTotal = ?, articleCount = ? WHERE ID = ?;',[
+        db.execute('UPDATE tickets SET profit = ?, discount = ?, subTotal = ?, total = ?, articleCount = ? WHERE ID = ?;',[
             data['profit'],
             data['discount'],
             data['subTotal'],
+            data['total'],
             data['articleCount'],
             ticketID
         ])
         
         rows = db.execute('SELECT ID FROM ticketsProducts WHERE ticketId = ?;', [ticketID])
         prodIDs = set()
+
         for row in rows:
             prodIDs.add(dict(row)['ID'])
 
@@ -489,7 +517,29 @@ def updateTicket():
             prodIDs.discard(prod['ID'])
         
         for id in prodIDs:
-            db.execute('UPDATE ticketsProducts SET ticketId = ? WHERE ID = ?;', [ticketID * -1,id])
+            db.execute('UPDATE ticketsProducts SET ticketId = ? WHERE ID = ?;', [ticketID * -1, id])
+
+        
+        date = datetime.now()
+        createAt = date.strftime('%Y-%m-%d %H:%M:%S')
+        queryTicktProd = 'INSERT INTO ticketsProducts (ticketId, code, description, cantity, profit, paidAt, isWholesale, usedPrice) values (?,?,?,?,?,?,?,?);'
+
+        for prod in data['newProducts']:
+            if(prod['cost']): profit = prod['salePrice'] * 100 /  prod['cost'] - 100
+            else: profit = 10
+
+            params = [
+                ticketID,
+                prod['code'],
+                prod['description'],
+                prod['cantity'],
+                round(profit),
+                createAt,
+                0,
+                prod['salePrice']
+            ]
+            
+            db.execute(queryTicktProd, params)
         
         db.commit()
 
@@ -501,7 +551,7 @@ def updateTicket():
         close_pdv_db()
 
 #DRAWER SERVICE
-@routes.route('/api/openDrawer/', methods=['POST'])
+@routes.route('/api/openDrawer', methods=['POST'])
 @jwt_required()
 def openDrawer():
     try:
@@ -516,8 +566,8 @@ def openDrawer():
         
         return jsonify({'message' : 'Succesfull drawer open'})
     except Exception as e:
-        if e: log_error(f'/api/openDrawer/: {e}')
-        return jsonify({'message' : 'Pedillos'}), 500
+        if e: log_error(f'/api/openDrawer: {e}')
+        return jsonify({'message' : 'Drawer can not be open'}), 500
 
 #LABELS SERVICE
 @routes.route('/api/get/modifiedProducts/day/<string:day>', methods=['GET'])
@@ -525,6 +575,9 @@ def openDrawer():
 def detModifiedByDay(day):
     db = get_hist_db()
     try:
+        if not day:
+            return jsonify({'message' : 'Not data sended'}), 100
+        
         rows = db.execute("SELECT * FROM history_changes_products WHERE modifiedAt = ? AND operationType != 'DELETE';",[day]).fetchall()
         products = []
         for row in rows:
@@ -537,7 +590,7 @@ def detModifiedByDay(day):
     finally:
         close_hist_db()
 
-@routes.route('/api/print/labels/', methods=['POST'])
+@routes.route('/api/print/labels', methods=['POST'])
 @jwt_required()
 def printLabels():
     try:
