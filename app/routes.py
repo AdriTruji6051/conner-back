@@ -617,6 +617,7 @@ def printLabels():
 @routes.route('/api/ia/consequent', methods=['POST'])
 #@jwt_required()
 def consequent():
+    db = get_pdv_db()
     try:
         data = dict(request.get_json())
 
@@ -625,8 +626,20 @@ def consequent():
         
         products = set(data['products'])
 
-        return jsonify(predict_product(products=products, rules=RULES))
+        products = predict_product(products=products, rules=RULES)
+
+        productsInfo = list()
+
+        for code in products:
+            try:
+                productsInfo.append(dict(db.execute('SELECT * FROM products WHERE code = ?;', [code]).fetchone()))
+            except:
+                continue
+
+        return jsonify(productsInfo)
+    
     except Exception as e:
         if e: log_error(f'/api/ia/consequent: {e}')
         return jsonify({'message' : "Couldn't get consequent products!"}), 500
-    return
+    finally:
+        close_pdv_db()
