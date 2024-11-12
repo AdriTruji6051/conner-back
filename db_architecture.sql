@@ -80,6 +80,12 @@ CREATE TABLE "history_changes_products" (
 	"operationType"	TEXT NOT NULL
 );
 
+--ia structure: FOR IA implements data base
+CREATE TABLE "Apriori" (
+	"ANTECEDENTSET"	TEXT NOT NULL,
+	"CONSECUENTSET"	TEXT NOT NULL
+);
+
 --Inserts for department, delete it at new db create
 INSERT INTO departments (code, description) VALUES (0, 'Sin departamento');
 INSERT INTO departments (code, description) VALUES (18, '18%');
@@ -101,6 +107,8 @@ INSERT INTO departments (code, description) VALUES (12, '12%');
 INSERT INTO departments (code, description) VALUES (2, '2%');
 INSERT INTO departments (code, description) VALUES (22, '22%');
 INSERT INTO departments (code, description) VALUES (21, '21%');
+
+
 
 
 --Querys to get data

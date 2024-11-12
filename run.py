@@ -12,6 +12,7 @@ from os import path, makedirs
 from shutil import copy
 import os
 import sys
+from app.dataScience import *
 
 app = create_app()
 
@@ -92,10 +93,14 @@ if __name__ == '__main__':
             threading.Thread(target=run_printer_service).start()
         openPDV()
     else:
+        #Data science
+        insert_new_predictions(a_priory())
+
+        #Server run
         host = '0.0.0.0'
         port = 5000
-        refreshApiIp()
-        main_db_backup()
-        threading.Thread(target=openPDV).start()
-        threading.Thread(target=run_printer_service).start()
+        # refreshApiIp()
+        # main_db_backup()
+        # threading.Thread(target=openPDV).start()
+        # threading.Thread(target=run_printer_service).start()
         app.run(host=host, port=port, debug=False)

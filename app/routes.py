@@ -3,10 +3,13 @@ from app.helpers import create_ticket_struct, get_printers, open_drawer, send_la
 from flask import jsonify, request, Blueprint, render_template
 from flask_jwt_extended import create_access_token, jwt_required
 from datetime import datetime
+from app.dataScience import get_asociation_rules, predict_product
 
 routes = Blueprint('routes', __name__)
 today = datetime.now().strftime('%Y-%m-%d')
+
 PRINTERS_ON_WEB = {}
+RULES = get_asociation_rules()
 
 
 @routes.route('/')
@@ -609,3 +612,21 @@ def printLabels():
     except Exception as e:
         if e: log_error(f'/api/print/labels/: {e}')
         return jsonify({'message' : "Couldn't print labels!"}), 500
+    
+#Data science and IA development
+@routes.route('/api/ia/consequent', methods=['POST'])
+#@jwt_required()
+def consequent():
+    try:
+        data = dict(request.get_json())
+
+        if data is None:
+            return jsonify({'message' : 'Not data sended'}), 400
+        
+        products = set(data['products'])
+
+        return jsonify(predict_product(products=products, rules=RULES))
+    except Exception as e:
+        if e: log_error(f'/api/ia/consequent: {e}')
+        return jsonify({'message' : "Couldn't get consequent products!"}), 500
+    return
