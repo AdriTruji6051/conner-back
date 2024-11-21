@@ -3,6 +3,7 @@ __pycache__/
 backup/
 build/
 dist/
+venv-back/
 logs.txt
 *.spec
 *.ico

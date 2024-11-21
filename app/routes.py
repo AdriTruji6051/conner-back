@@ -129,6 +129,7 @@ def getProductById(id):
 def getAllProducts(description):
     db = get_pdv_db()
     try:
+        original_description = description
         description = description.split()
         if len(description) < 2:
             query = "SELECT * FROM products WHERE description LIKE ? ORDER BY priority DESC, CASE WHEN description LIKE ? THEN 0 ELSE 1 END, description;"
@@ -139,7 +140,8 @@ def getAllProducts(description):
             for i in range(len(description)):
                 query += ' description LIKE ? AND ' if i + 1 < len(description) else 'description LIKE ? '
                 params.append(f'%{description[i]}%')
-            query += "ORDER BY priority DESC, CASE WHEN description LIKE ? THEN 0 ELSE 1 END, description;"
+            query += "ORDER BY priority DESC, CASE WHEN description LIKE ? THEN 0 WHEN description LIKE ? THEN 1 ELSE 2 END, description;"
+            params.append(f'{original_description}%')
             params.append(f'{description[0]}%')
             prod = db.execute(query,params).fetchall()
 
@@ -615,7 +617,7 @@ def printLabels():
     
 #Data science and IA development
 @routes.route('/api/ia/consequent', methods=['POST'])
-#@jwt_required()
+@jwt_required()
 def consequent():
     db = get_pdv_db()
     try:
@@ -637,9 +639,34 @@ def consequent():
                 continue
 
         return jsonify(productsInfo)
-    
+
     except Exception as e:
         if e: log_error(f'/api/ia/consequent: {e}')
         return jsonify({'message' : "Couldn't get consequent products!"}), 500
     finally:
         close_pdv_db()
+
+@routes.route('/api/ia/asociation/rules', methods=['GET'])
+#@jwt_required()
+def asociation_rules():
+    db = get_pdv_db()
+    try:
+        all_asociation_data = list()
+        for rule, consequent in RULES:
+            data_rules = list()
+            for r in rule:
+                try: data_rules.append(dict(db.execute("SELECT * FROM products WHERE code = ?", [r]).fetchone()))
+                except: continue
+            
+            data_consequents = list()
+            for c in consequent:
+                try: data_consequents.append(dict(db.execute("SELECT * FROM products WHERE code = ?", [c]).fetchone()))
+                except: continue
+            
+            all_asociation_data.append((data_rules, data_consequents))
+        
+        return jsonify(all_asociation_data)
+
+    except Exception as e:
+        if e: log_error(f'/api/ia/asociation/rules: {e}')
+        return jsonify({'message' : "Couldn't get asociation rules!"}), 500

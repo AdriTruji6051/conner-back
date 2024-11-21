@@ -40,6 +40,8 @@ def predict_product(products: set, rules: list):
 def a_priory():
     db = get_db()
     tickets = dict()
+    min_support = 0.01
+    min_treshold = 0.5
     try:
         rows = db.execute('SELECT ticketId, code FROM ticketsProducts;').fetchall()
         
@@ -63,7 +65,7 @@ def a_priory():
 
         frequent_itemsets = apriori(df=df, min_support=0.01, use_colnames=True)
         
-        rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.5, num_itemsets=1)
+        rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1, num_itemsets=1)
 
         #Formating the results for INSERT
         predictionTuples = list()
