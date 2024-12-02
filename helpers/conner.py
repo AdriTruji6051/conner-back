@@ -1,3 +1,5 @@
+from app.models import close_pdv_db, get_pdv_db
+
 from mlxtend.frequent_patterns import apriori, association_rules
 from mlxtend.preprocessing import TransactionEncoder
 import sqlite3
@@ -112,3 +114,54 @@ def get_asociation_rules():
     finally:
         close_db(dbIa)
     return
+
+
+
+def conner_consequents(data):
+    from app.routes import RULES
+    db = get_pdv_db()
+    try:        
+        products = set(data['products'])
+
+        products = predict_product(products=products, rules=RULES)
+
+        productsInfo = list()
+
+        for code in products:
+            try:
+                productsInfo.append(dict(db.execute('SELECT * FROM products WHERE code = ?;', [code]).fetchone()))
+            except:
+                continue
+
+        return productsInfo
+
+    except Exception as e:
+        raise e
+    finally:
+        close_pdv_db()
+
+
+def conner_asociation_rules():
+    from app.routes import RULES
+    db = get_pdv_db()
+    try:
+        all_asociation_data = list()
+        for rule, consequent in RULES:
+            data_rules = list()
+            for r in rule:
+                try: data_rules.append(dict(db.execute("SELECT * FROM products WHERE code = ?", [r]).fetchone()))
+                except: continue
+            
+            data_consequents = list()
+            for c in consequent:
+                try: data_consequents.append(dict(db.execute("SELECT * FROM products WHERE code = ?", [c]).fetchone()))
+                except: continue
+            
+            all_asociation_data.append((data_rules, data_consequents))
+        
+        return all_asociation_data
+
+    except Exception as e:
+        raise e
+    finally:
+        close_pdv_db()

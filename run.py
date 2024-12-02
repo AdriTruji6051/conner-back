@@ -12,7 +12,7 @@ from os import path, makedirs
 from shutil import copy
 import os
 import sys
-from app.dataScience import *
+from helpers.conner import a_priory, insert_new_predictions
 
 app = create_app()
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         host = '0.0.0.0'
         port = 5000
         refreshApiIp()
-        # main_db_backup()
-        # threading.Thread(target=openPDV).start()
+        main_db_backup()
+        threading.Thread(target=openPDV).start()
         threading.Thread(target=run_printer_service).start()
         app.run(host=host, port=port, debug=False)

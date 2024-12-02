@@ -3,6 +3,7 @@ from flask import g
 
 DATABASE = './db/data_base.db'
 HISTORY = './db/history.db'
+DRAWER_LOGS = './db/drawer_logs.db'
 
 def get_pdv_db() -> object:
     try:
@@ -36,6 +37,26 @@ def get_hist_db() -> object:
 def close_hist_db():
     try:
         db = g.pop('hist', None)
+        if db is not None:
+            db.session.remove()
+            db.close()
+
+    except Exception as e:
+        raise(e)  
+    
+def get_drawer_db() -> object:
+    try:
+        if 'draw' not in g:
+            g.db = sqlite3.connect(DRAWER_LOGS)
+            g.db.row_factory = sqlite3.Row
+        return g.db
+    
+    except Exception as e:
+        raise(e)
+
+def close_drawer_db():
+    try:
+        db = g.pop('draw', None)
         if db is not None:
             db.session.remove()
             db.close()
