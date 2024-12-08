@@ -25,7 +25,7 @@ def get_product(id_or_description):
         raise e
     finally:
         close_pdv_db()
-
+    
 def get_product_by_id(id) -> dict:
     db = get_pdv_db()
     try:
@@ -146,6 +146,7 @@ def update_product(data):
     db = get_pdv_db()
     try:
         db.execute("PRAGMA foreign_keys = ON;")
+        print(data)
 
         #Updating the product!
         query = 'UPDATE products SET description = ?, saleType = ?, cost = ?, salePrice = ?, department = ?, wholesalePrice = ?, inventory = ?, profitMargin = ?, parentCode = ?, code = ?, modifiedAt = ? WHERE code = ?;'
@@ -176,7 +177,19 @@ def update_product(data):
                 insert_history_register(data=historical, today=today, method='PUT')
 
             db.commit()
-        return {'message' : 'Product succesfully updated!'}
+
+        db.commit()
+
+        try:
+            prod = get_product_by_id(data['code'])
+            if(prod['cost'] == data['cost'] and prod['salePrice'] == data['salePrice'] and prod['wholesalePrice'] == data['wholesalePrice'] and prod['profitMargin'] == data['profitMargin']):
+                return {'message' : f'Product succesfully updated!, code: {data['code']}'}
+            else: 
+                raise Exception
+            
+        except Exception as e:
+            update_product(data)
+        
     except Exception as e:
         raise e
     finally:
