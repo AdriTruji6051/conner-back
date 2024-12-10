@@ -146,11 +146,10 @@ def update_product(data):
     db = get_pdv_db()
     try:
         db.execute("PRAGMA foreign_keys = ON;")
-        print(data)
 
         #Updating the product!
-        query = 'UPDATE products SET description = ?, saleType = ?, cost = ?, salePrice = ?, department = ?, wholesalePrice = ?, inventory = ?, profitMargin = ?, parentCode = ?, code = ?, modifiedAt = ? WHERE code = ?;'
-        keys = ["description", "saleType", "cost", "salePrice", "department", "wholesalePrice", "inventory", "profitMargin", "parentCode", "code"]
+        query = 'UPDATE products SET description = ?, saleType = ?, cost = ?, salePrice = ?, department = ?, wholesalePrice = ?, inventory = ?, profitMargin = ?, parentCode = ?, code = ?, priority = ?, modifiedAt = ? WHERE code = ?;'
+        keys = ["description", "saleType", "cost", "salePrice", "department", "wholesalePrice", "inventory", "profitMargin", "parentCode", "code", "priority"]
         params = [data[key] for key in keys]
         params.append(today)
         params.append(data['originalCode'])
@@ -160,7 +159,7 @@ def update_product(data):
         #Insert register at history
         insert_history_register(data=data, today=today, method='PUT')
 
-        query = 'UPDATE products SET cost = ?, salePrice = ?, wholesalePrice = ?, profitMargin = ?,  modifiedAt = ? WHERE code = ?;'
+        query = 'UPDATE products SET cost = ?, salePrice = ?, wholesalePrice = ?, profitMargin = ?, modifiedAt = ?, WHERE code = ?;'
         keys = ["cost", "salePrice", "wholesalePrice", "profitMargin"]
 
         siblings = data['siblings']
