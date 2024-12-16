@@ -100,8 +100,8 @@ if __name__ == '__main__':
         #Server run
         host = '0.0.0.0'
         port = 5000
-        refreshApiIp()
-        main_db_backup()
-        threading.Thread(target=openPDV).start()
-        threading.Thread(target=run_printer_service).start()
+        #refreshApiIp()
+        #main_db_backup()
+        #threading.Thread(target=openPDV).start()
+        #threading.Thread(target=run_printer_service).start()
         app.run(host=host, port=port, debug=False)

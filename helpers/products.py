@@ -146,7 +146,6 @@ def update_product(data):
     db = get_pdv_db()
     try:
         db.execute("PRAGMA foreign_keys = ON;")
-
         #Updating the product!
         query = 'UPDATE products SET description = ?, saleType = ?, cost = ?, salePrice = ?, department = ?, wholesalePrice = ?, inventory = ?, profitMargin = ?, parentCode = ?, code = ?, priority = ?, modifiedAt = ? WHERE code = ?;'
         keys = ["description", "saleType", "cost", "salePrice", "department", "wholesalePrice", "inventory", "profitMargin", "parentCode", "code", "priority"]
@@ -159,7 +158,7 @@ def update_product(data):
         #Insert register at history
         insert_history_register(data=data, today=today, method='PUT')
 
-        query = 'UPDATE products SET cost = ?, salePrice = ?, wholesalePrice = ?, profitMargin = ?, modifiedAt = ?, WHERE code = ?;'
+        query = 'UPDATE products SET cost = ?, salePrice = ?, wholesalePrice = ?, profitMargin = ?, modifiedAt = ? WHERE code = ?;'
         keys = ["cost", "salePrice", "wholesalePrice", "profitMargin"]
 
         siblings = data['siblings']
@@ -171,8 +170,7 @@ def update_product(data):
                 params.append(today)
                 params.append(sibl)
                 db.execute(query, params)
-
-                historical = dict(db.execute("SELECT * FROM products WHERE code = ?;", [f'{sibl}']).fetchone())
+                historical = dict(db.execute("SELECT * FROM products WHERE code = ?;", [f'{str(sibl)}']).fetchone())
                 insert_history_register(data=historical, today=today, method='PUT')
 
             db.commit()
