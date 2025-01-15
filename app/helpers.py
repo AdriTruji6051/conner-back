@@ -2,6 +2,7 @@ import logging
 import socket
 import json
 import math
+from .models import get_conf_db, close_conf_db
 
 logging.basicConfig(
     filename='logs.txt',  
@@ -95,29 +96,27 @@ def open_drawer(printer: dict):
 
     return data.decode('utf-8')
 
+from num2words import num2words
+
 def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: float, notes: str, date: str, productCount: int, wholesale: float):
     ticketLen = 29
     ticketLines = []
+    conf_db = get_conf_db()
     try:
-        #Ticket header
-        header = [
-            'Tel: 373 734 9861'.center(ticketLen, ' '), 
-            'Cel: 33 1076 7498'.center(ticketLen, ' '), 
-            'Independencia #106 Col Centro'.center(ticketLen, ' '),
-            'Servicio a domicilio!...'.center(ticketLen, ' '),
-            f'{date}'.center(ticketLen, ' '),
-            f'Ticket °{ticketID}'.center(ticketLen, ' ')
-            ]
+        #Ticket header TODO
+        query = 'SELECT * FROM ticketText WHERE header = 1 ORDER BY Line;'
+        headerText = conf_db.execute(query).fetchall()
+
+        for head in headerText:
+            head = dict(head)
+            ticketLines.append([head['Font'], head['Size'], head['Weight'], head['Text'].center(ticketLen, ' ').upper()])
         
         if (notes):
-            header.append('Notas:')
+            ticketLines.append([['Lucida Console', 30, 1200 ], 'NOTAS:'])
             for i in range(0, len(notes), ticketLen):
-                header.append(f'{notes[i:i + ticketLen]}')
+                ticketLines.append([['Lucida Console', 30, 1200 ], f'{notes[i:i + ticketLen]}'.upper()])
+            ticketLines.append([['Lucida Console', 30, 1200 ], '-------------------------------'])
         
-        header.append('-------------------------------')
-
-        for line in header:
-            ticketLines.append([['Lucida Console', 30, 1200 ], line.upper()])
 
         #Ticket products
         for prod in products:
@@ -133,19 +132,30 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
         ticketLines.append([['Lucida Console', 30, 1200 ], '-------------------------------'])
         change = total - subtotal
 
-        #Ticket footer
+        #Ticket footer TODO
         footer = [
             f'Total: $ {subtotal}',
         ]
 
+        footer.append(num2words(subtotal, lang='es'))
+
         if change: footer.append(f'Cambio: $ {change}')
         footer.append(f'Productos: {productCount}')
         if wholesale: footer.append(f'Descuento: $ {wholesale}')
-        footer.append('Gracias por su compra!...')
 
         for line in footer:
             ticketLines.append([['Arial', 45, 1300], line.upper()])
+        
+        query = 'SELECT * FROM ticketText WHERE header = 0 ORDER BY Line;'
+        footerText = conf_db.execute(query).fetchall()
+
+        for foot in footerText:
+            foot = dict(foot)
+            ticketLines.append([foot['Font'], foot['Size'], foot['Weight'], foot['Text'].center(ticketLen, ' ').upper()])
+        
 
         return ticketLines
     except Exception as e:
         print(e)
+    finally:
+        close_conf_db()

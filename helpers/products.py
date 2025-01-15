@@ -42,7 +42,7 @@ def get_product_by_id(id) -> dict:
     finally:
         close_pdv_db()
 
-def searc_products_by_description(description) -> list:
+def searc_products_by_description(description: str, called: bool = False) -> list:
     db = get_pdv_db()
     try:
         original_description = description
@@ -67,6 +67,11 @@ def searc_products_by_description(description) -> list:
             products.append(dict(row))
             cont += 1
             if cont >= 70: break
+        
+        if 'ñ' in original_description and not called:
+            products.extend(searc_products_by_description(original_description.replace('ñ', 'Ñ'), True))
+        elif 'Ñ' in original_description and not called:
+            products.extend(searc_products_by_description(original_description.replace('Ñ', 'ñ'), True))
 
         return products
     except Exception as e:

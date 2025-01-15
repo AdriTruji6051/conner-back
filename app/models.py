@@ -4,6 +4,7 @@ from flask import g
 DATABASE = './db/data_base.db'
 HISTORY = './db/history.db'
 DRAWER_LOGS = './db/drawer_logs.db'
+CONFIG_DB = './db/config.db'
 
 def get_pdv_db() -> object:
     try:
@@ -18,6 +19,26 @@ def get_pdv_db() -> object:
 def close_pdv_db():
     try:
         db = g.pop('pdv_db', None)
+        if db is not None:
+            db.close()
+
+    except Exception as e:
+        raise(e)
+
+
+def get_conf_db() -> object:
+    try:
+        if 'conf_db' not in g:
+            g.db = sqlite3.connect(CONFIG_DB)
+            g.db.row_factory = sqlite3.Row
+        return g.db
+    
+    except Exception as e:
+        raise(e)
+
+def close_conf_db():
+    try:
+        db = g.pop('conf_db', None)
         if db is not None:
             db.close()
 

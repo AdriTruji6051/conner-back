@@ -287,7 +287,7 @@ def openDrawer():
 #LABELS SERVICE
 @routes.route('/api/get/modifiedProducts/day/<string:day>', methods=['GET'])
 @jwt_required()
-def detModifiedByDay(day):
+def getModifiedByDay(day):
     try:
         if not day:
             return jsonify({'message' : 'Not data sended'}), 100
