@@ -4,6 +4,7 @@ backup/
 build/
 dist/
 venv-back/
+venv/
 logs.txt
 *.spec
 *.ico
