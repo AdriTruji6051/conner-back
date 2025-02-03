@@ -15,6 +15,9 @@ def round_number(number):
     rounded = math.ceil(number * 2) / 2
     return int(rounded) if rounded.is_integer() else rounded
 
+def format_number(number) -> str: 
+    return str(int(number)) if number.is_integer() else "{:.2f}".format(number)
+
 def log_error(error_message: str):
     logging.error(error_message)
 
@@ -109,14 +112,18 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
 
         for head in headerText:
             head = dict(head)
-            ticketLines.append([head['Font'], head['Size'], head['Weight'], head['Text'].center(ticketLen, ' ').upper()])
+            ticketLines.append([[head['Font'], head['Size'], head['Weight']], head['Text'].center(ticketLen, ' ').upper()])
         
         if (notes):
             ticketLines.append([['Lucida Console', 30, 1200 ], 'NOTAS:'])
             for i in range(0, len(notes), ticketLen):
                 ticketLines.append([['Lucida Console', 30, 1200 ], f'{notes[i:i + ticketLen]}'.upper()])
-            ticketLines.append([['Lucida Console', 30, 1200 ], '-------------------------------'])
-        
+
+        ticketLines.append([['Lucida Console', 30, 1200 ], 'FECHA: {}'.format(date[:16]).center(ticketLen, ' ')])
+        ticketLines.append([['Lucida Console', 30, 1200 ], 'TICKET ° {}'.format(ticketID).center(ticketLen, ' ')])
+        ticketLines.append([['Lucida Console', 30, 1200 ], ''])
+        ticketLines.append([['Lucida Console', 30, 1500 ], 'CANTIDAD    PRECIO    IMPORTE'])
+        ticketLines.append([['Lucida Console', 30, 1200 ], '-------------------------------'])
 
         #Ticket products
         for prod in products:
@@ -124,10 +131,10 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
             cantity = round(prod['cantity'],3)
             rowImport = round(prod['import'],1)
 
-            productRow = str(cantity) + ' ' + str(description)
-            if(len(productRow) > 24): productRow = productRow[:23]
+            ticketLines.append([['Lucida Console', 30, 1500], "{:29}".format(description[:29]).upper()]) #Product description
+            ticketLines.append([['Lucida Console', 30, 1500], "{:5} pz   $ {:7}  $ {}".format(cantity, format_number(rowImport/cantity), rowImport).upper()])
 
-            ticketLines.append([['Lucida Console', 30, 1500], "{:24}{:>5}".format(productRow, rowImport).upper()])
+
         
         ticketLines.append([['Lucida Console', 30, 1200 ], '-------------------------------'])
         change = total - subtotal
@@ -151,7 +158,7 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
 
         for foot in footerText:
             foot = dict(foot)
-            ticketLines.append([foot['Font'], foot['Size'], foot['Weight'], foot['Text'].center(ticketLen, ' ').upper()])
+            ticketLines.append([[foot['Font'], foot['Size'], foot['Weight']], foot['Text'].center(ticketLen, ' ').upper()])
         
 
         return ticketLines

@@ -61,12 +61,9 @@ def searc_products_by_description(description: str, called: bool = False) -> lis
             params.append(f'{description[0]}%')
             prod = db.execute(query,params).fetchall()
 
-        cont = 0
         products = []
         for row in prod:
             products.append(dict(row))
-            cont += 1
-            if cont >= 70: break
         
         if 'ñ' in original_description and not called:
             products.extend(searc_products_by_description(original_description.replace('ñ', 'Ñ'), True))
