@@ -88,20 +88,21 @@ def isPrinterRunning(host='127.0.0.1', port=12345):
             return False
 
 if __name__ == '__main__':
+    isDebugin = True
     if(isFlaskRunning()):
         if(not isPrinterRunning()):
             threading.Thread(target=run_printer_service).start()
         openPDV()
     else:
-        print('Olis')
         #Data science
         # insert_new_predictions(a_priory())
 
         #Server run
         host = '0.0.0.0'
         port = 5000
-        #refreshApiIp()
-        #main_db_backup()
-        #threading.Thread(target=openPDV).start()
-        #threading.Thread(target=run_printer_service).start()
+        if not isDebugin:
+            refreshApiIp()
+            main_db_backup()
+            threading.Thread(target=openPDV).start()
+            threading.Thread(target=run_printer_service).start()
         app.run(host=host, port=port, debug=False)

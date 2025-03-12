@@ -118,4 +118,6 @@ def drawer_log(time: str, action: str):
         raise e
     finally:
         close_drawer_db()
+
+
    

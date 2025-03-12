@@ -144,7 +144,6 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
             f'Total: $ {subtotal}',
         ]
 
-        footer.append(num2words(subtotal, lang='es'))
 
         if change: footer.append(f'Cambio: $ {change}')
         footer.append(f'Productos: {productCount}')
@@ -160,6 +159,9 @@ def create_ticket_struct(ticketID: int ,products: list, total: float, subtotal: 
             foot = dict(foot)
             ticketLines.append([[foot['Font'], foot['Size'], foot['Weight']], foot['Text'].center(ticketLen, ' ').upper()])
         
+        totalInWords = num2words(subtotal, lang='es')
+        for i in range(0, len(totalInWords), ticketLen):
+            ticketLines.append([['Lucida Console', 30, 1500], totalInWords[i:i + ticketLen].upper() ])
 
         return ticketLines
     except Exception as e:

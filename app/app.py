@@ -20,7 +20,9 @@ def create_app():
     # Registro de rutas
     from app.routes import routes
     from app.statistics import routesStat
+    from app.configs import routesConfig
     app.register_blueprint(routes)
     app.register_blueprint(routesStat)
+    app.register_blueprint(routesConfig)
 
     return app

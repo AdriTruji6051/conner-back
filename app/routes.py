@@ -3,6 +3,7 @@ from flask import jsonify, request, Blueprint, render_template
 from flask_jwt_extended import create_access_token, jwt_required
 from datetime import datetime
 from helpers.conner import get_asociation_rules
+from helpers.models.Config import Config
 
 routes = Blueprint('routes', __name__)
 today = datetime.now().strftime('%Y-%m-%d')
